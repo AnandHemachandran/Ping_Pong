@@ -1,0 +1,204 @@
+<html>
+<canvas id="game" width="800" height="600"></canvas>
+<script>
+var canvas;
+var canvasContext;
+var ballX=400;
+var ballY=300;
+var ballSpeedX=8;
+var ballSpeedY=5;
+var paddle1 = (600-120)/2;
+var paddle2 = (600-120)/2;
+var upPressed = false;
+var downPressed = false;
+var player1Score=0;
+var player2Score=0;
+const WINNING_SCORE=10;
+var winScreen=false
+
+
+
+
+//for moving the paddle
+document.addEventListener("keydown", keyDownHandler, false);
+document.addEventListener("keyup", keyUpHandler, false);
+
+function keyDownHandler(e) {
+    if(e.keyCode == 40) {
+        //keyCode 40 implies down arrow
+        downPressed = true;
+    }
+    else if(e.keyCode == 38) {
+      //keyCode 38 implies up arrow
+        upPressed = true;
+    }
+}
+
+function keyUpHandler(e) {
+    if(e.keyCode == 40) {
+        downPressed = false;
+    }
+    else if(e.keyCode == 38) {
+        upPressed = false;
+    }
+}
+
+
+//main
+
+window.onload=function(){
+    canvas=document.getElementById('game');
+    canvasContext=canvas.getContext('2d');
+
+    //refreshing the frames in the given frequency
+    var FPS=40;//Frames per Second
+    setInterval(function() {
+      draw();
+      animation();
+    },1000/FPS)
+      // It calls the draw and animation function every 25 milliseconds
+}
+
+function draw(){
+
+  //Draws Background
+  canvasContext.fillStyle='black';
+  canvasContext.fillRect(0,0,canvas.width,canvas.height);
+    //(x position[left of the rect],y postion[top of the rect],width,height)
+
+  //Draws Ball
+  canvasContext.fillStyle='red';
+  canvasContext.beginPath();
+  canvasContext.arc(ballX,ballY,10,0,Math.PI*2,true)
+    //(x position[center of circle], y position[center of circle],radius of circle,,Radians, to fill the covered section or the other)
+  canvasContext.fill()
+
+  //Draws Paddle1
+  canvasContext.fillStyle='white';
+  canvasContext.fillRect(0,paddle1,10,120)
+
+  //Draws Paddle2
+  canvasContext.fillStyle='white';
+  canvasContext.fillRect(canvas.width-10,paddle2,10,120)
+  canvasContext.font="40px Trebuchet MS";
+  canvasContext.fillText(player1Score,150,100);
+  canvasContext.fillText(player2Score,600,100);
+}
+
+// resets the ball to center
+function ballReset(){
+  if(player1Score>=WINNING_SCORE||player2Score>=WINNING_SCORE){
+            winScreen=true;
+  }
+
+  ballSpeedX=-ballSpeedX;
+    //To reverse the velocity
+  ballX=canvas.width/2;
+  ballY=canvas.height/2;
+}
+
+
+function animation(){
+
+  if(winScreen){
+    if(player1Score>player2Score){
+      canvasContext.font="40px Trebuchet MS";
+      canvasContext.fillText("PLAYER 1 HAS WON",220,250);
+      canvasContext.font="30px Trebuchet MS";
+      canvasContext.fillText("Please refresh to continue",210,400)
+    }else{
+      canvasContext.font="40px Trebuchet MS";
+      canvasContext.fillText("PLAYER 2 HAS WON",220,250);
+      canvasContext.font="30px Trebuchet MS";
+      canvasContext.fillText("Please refresh to continue",210,400)
+    }
+
+    return
+    //when it reaches the Winning score it stops the animation
+  }
+
+// Ball animations
+  ballX=ballX+ballSpeedX;
+  console.log(ballX);
+    // to check whether the code runs or not
+  ballY=ballY+ballSpeedY;
+  console.log(ballY);
+
+  //Bouncing at the left and right wall
+  if(ballX<10){
+    if(ballY>paddle1 && ballY<(paddle1+120)){
+      ballSpeedX=-ballSpeedX;
+      var dY=ballY-(paddle1+60)
+        //change between the y-position of center of the ball and y-postion of the center of the paddle1
+      ballSpeedY=dY*0.25;
+        /*Used to make the ball less predictable
+            /
+        1.|/
+          |\
+          | \
+          |
+
+        2.| /
+          |/______
+          |\
+          | \
+
+        3.|
+          | /
+          |/
+          |\
+            \
+        */
+
+    }else{
+      player2Score++;
+      ballReset();
+        //comes to the center after it passes the left paddles
+
+    }
+  }
+
+  if(ballX>canvas.width-10){
+    if(ballY>paddle2 && ballY<(paddle2+120)){
+      ballSpeedX=-ballSpeedX;
+      var dY=ballY-(paddle2+60)
+        //change between the y-position of center of the ball and y-postion of the center of the paddle2
+      ballSpeedY=dY*0.25;
+        //Used to make the ball less predictable
+    }else{
+      player1Score++;
+      ballReset();
+        //comes to the center after it passes the right paddles
+    }
+  }
+//Bouncing at the top and Bottom Walls
+  if(ballY>canvas.height-10){
+    ballSpeedY=-ballSpeedY
+  }
+  if(ballY<10){
+    ballSpeedY=-ballSpeedY
+  }
+
+
+//Paddle Animations
+computerPaddle()
+  if(downPressed && paddle1 <canvas.height-120) {
+        paddle1 += 7;
+    }
+  else if(upPressed && paddle1>0) {
+        paddle1 -= 7;
+    }
+
+}
+//Computer Automated Paddle
+function computerPaddle(){
+  var paddle2Center=paddle2+60;
+  if(paddle2Center<ballY-45){
+    paddle2=paddle2+6;
+  }else if(paddle2Center>ballY+45){
+    paddle2=paddle2-6;
+  }
+}
+
+</script>
+</html>
